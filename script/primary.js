@@ -1,15 +1,10 @@
 // Animation Timeline
 const animationTimeline = () => {
-  const textBoxChars = document.querySelector(".hbd-chatbox");
-  const hbd = document.querySelector(".wish-hbd");
+  const textBoxChars = document.getElementsByClassName("hbd-chatbox")[0];
+  const hbd = document.getElementsByClassName("wish-hbd")[0];
 
-  textBoxChars.innerHTML = `<span>${textBoxChars.innerHTML
-    .split("")
-    .join("</span><span>")}</span>`;
-
-  hbd.innerHTML = `<span>${hbd.innerHTML
-    .split("")
-    .join("</span><span>")}</span>`;
+  textBoxChars.innerHTML = `<span>${textBoxChars.innerHTML.split("").join("</span><span>")}</span>`;
+  hbd.innerHTML = `<span>${hbd.innerHTML.split("").join("</span><span>")}</span>`;
 
   const ideaTextTrans = {
     opacity: 0,
@@ -27,9 +22,7 @@ const animationTimeline = () => {
 
   const tl = new TimelineMax();
 
-  tl.to(".container", 0.1, {
-    visibility: "visible",
-  })
+  tl.to(".container", 0.1, { visibility: "visible" })
     .from(".one", 0.7, { opacity: 0, y: 10 })
     .from(".two", 0.4, { opacity: 0, y: 10 })
     .to(".one", 0.7, { opacity: 0, y: 10 }, "+=2.5")
@@ -77,13 +70,16 @@ const animationTimeline = () => {
       rotation: -15,
       ease: Expo.easeOut,
     }, 0.2, "+=1")
-    .staggerFromTo(".baloons img", 2.5, {
-      opacity: 0.9,
-      y: 1400,
+    .staggerFromTo(".baloons img", 3, {
+      opacity: 0,
+      y: 1000,
+      x: () => Math.random() * 400 - 200
     }, {
       opacity: 1,
       y: -1000,
-    }, 0.2)
+      x: () => Math.random() * 400 - 200,
+      ease: Power1.easeInOut
+    }, 0.1)
     .from(".girl-dp", 0.5, {
       scale: 3.5,
       opacity: 0,
@@ -91,6 +87,12 @@ const animationTimeline = () => {
       y: -25,
       rotationZ: -45,
     }, "-=2")
+    .from(".hat", 0.5, {
+      x: -100,
+      y: 350,
+      rotation: -180,
+      opacity: 0,
+    })
     .staggerFrom(".wish-hbd span", 0.7, {
       opacity: 0,
       y: -50,
@@ -119,33 +121,40 @@ const animationTimeline = () => {
       repeat: 3,
       repeatDelay: 1.4,
     }, 0.3)
-    .to(".six", 0.5, {
-      opacity: 0,
-      y: 30,
-      zIndex: "-1",
-    })
+    // Sembunyikan elemen lama sebelum muncul bagian akhir
+    .to(".six", 0.5, { opacity: 0, y: 30, zIndex: "-1" })
+    .to(".wish", 0.5, { opacity: 0, y: 30, zIndex: "-1" }, "-=0.5")
+    .to(".eight", 0.5, { opacity: 0, y: 30, zIndex: "-1" }, "-=0.5")
+    .to(".wish-hbd", 0.5, { opacity: 0, y: -30, zIndex: "-1" }, "-=0.5")
     .staggerFrom(".nine p", 1, ideaTextTrans, 1.2)
-    .to(".last-smile", 0.5, { rotation: 90 }, "+=1");
+    .to(".last-smile", 0.5, { rotation: 360 }, "+=1")
+    // Tampilkan bagian akhir (ten)
+    .from(".ten", 1, {
+      opacity: 0,
+      y: 50,
+      ease: Expo.easeOut
+    }, "+=1");
 
-  // Restart Animation
-  document.getElementById("replay").addEventListener("click", () => tl.restart());
+  const replyBtn = document.getElementById("replay");
+  replyBtn.addEventListener("click", () => {
+    tl.restart();
+  });
 };
 
-// Fetch customization
+// Ambil data dari customize.json
 const fetchData = () => {
   fetch("customize.json")
-    .then((res) => res.json())
+    .then((data) => data.json())
     .then((data) => {
-      for (const key in data) {
-        const el = document.getElementById(key);
-        if (el) {
-          if (key === "imagePath") {
-            el.setAttribute("src", data[key]);
+      Object.keys(data).map((customData) => {
+        if (data[customData] !== "") {
+          if (customData === "imagePath") {
+            document.getElementById(customData).setAttribute("src", data[customData]);
           } else {
-            el.innerText = data[key];
+            document.getElementById(customData).innerText = data[customData];
           }
         }
-      }
+      });
     });
 };
 
@@ -158,24 +167,12 @@ const resolveFetch = () => {
 
 resolveFetch().then(animationTimeline);
 
-// Autoplay music on interaction
+// Audio autoplay setelah user klik
 window.addEventListener("click", () => {
   const audio = document.querySelector("audio");
   if (audio) {
-    audio.play().catch((e) => console.log("Audio gagal autoplay:", e));
+    audio.play().catch((e) => {
+      console.log("Audio tidak bisa autoplay:", e);
+    });
   }
 });
-
-// Confetti!
-const makeConfetti = () => {
-  for (let i = 0; i < 100; i++) {
-    const confetti = document.createElement("div");
-    confetti.classList.add("confetti");
-    confetti.style.left = `${Math.random() * 100}vw`;
-    confetti.style.animationDelay = `${Math.random() * 3}s`;
-    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
-    document.body.appendChild(confetti);
-  }
-};
-
-window.onload = makeConfetti;
