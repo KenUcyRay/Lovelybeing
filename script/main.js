@@ -1,7 +1,8 @@
 // Animation Timeline
 const animationTimeline = () => {
-  const textBoxChars = document.querySelector(".hbd-chatbox");
-  const hbd = document.querySelector(".wish-hbd");
+  // Split chars that needs to be animated individually
+  const textBoxChars = document.getElementsByClassName("hbd-chatbox")[0];
+  const hbd = document.getElementsByClassName("wish-hbd")[0];
 
   textBoxChars.innerHTML = `<span>${textBoxChars.innerHTML
     .split("")
@@ -91,6 +92,12 @@ const animationTimeline = () => {
       y: -25,
       rotationZ: -45,
     }, "-=2")
+    .from(".hat", 0.5, {
+      x: -100,
+      y: 350,
+      rotation: -180,
+      opacity: 0,
+    })
     .staggerFrom(".wish-hbd span", 0.7, {
       opacity: 0,
       y: -50,
@@ -127,30 +134,35 @@ const animationTimeline = () => {
     .staggerFrom(".nine p", 1, ideaTextTrans, 1.2)
     .to(".last-smile", 0.5, { rotation: 90 }, "+=1");
 
-  // Restart Animation
-  document.getElementById("replay").addEventListener("click", () => tl.restart());
+  // Restart Animation on click
+  const replyBtn = document.getElementById("replay");
+  replyBtn.addEventListener("click", () => {
+    tl.restart();
+  });
 };
 
-// Fetch customization
+// Import the data to customize and insert them into page
 const fetchData = () => {
   fetch("customize.json")
-    .then((res) => res.json())
+    .then((data) => data.json())
     .then((data) => {
-      for (const key in data) {
-        const el = document.getElementById(key);
-        if (el) {
-          if (key === "imagePath") {
-            el.setAttribute("src", data[key]);
+      Object.keys(data).map((customData) => {
+        if (data[customData] !== "") {
+          if (customData === "imagePath") {
+            document
+              .getElementById(customData)
+              .setAttribute("src", data[customData]);
           } else {
-            el.innerText = data[key];
+            document.getElementById(customData).innerText = data[customData];
           }
         }
-      }
+      });
     });
 };
 
+// Run fetch and animation in sequence
 const resolveFetch = () => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     fetchData();
     resolve("Fetch done!");
   });
@@ -158,15 +170,17 @@ const resolveFetch = () => {
 
 resolveFetch().then(animationTimeline);
 
-// Autoplay music on interaction
+// === AUDIO AUTOPLAY ===
+// Coba play audio setelah user interaksi pertama
 window.addEventListener("click", () => {
   const audio = document.querySelector("audio");
   if (audio) {
-    audio.play().catch((e) => console.log("Audio gagal autoplay:", e));
+    audio.play().catch((e) => {
+      console.log("Audio tidak bisa autoplay:", e);
+    });
   }
 });
 
-// Confetti!
 const makeConfetti = () => {
   for (let i = 0; i < 100; i++) {
     const confetti = document.createElement("div");
